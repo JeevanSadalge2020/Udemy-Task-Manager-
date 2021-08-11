@@ -37,17 +37,40 @@ router.patch("/tasks/:id", async (req, res) => {
   }
 
   try {
-    const task = await Task.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
+    const task = await Task.findById(id);
+    // IMPORTANT;
+    keys.forEach(key => {
+      if (props.includes(key)) {
+        task[key] = req.body[key];
+      } else {
+        // TRY ADDING A PROPERTY THAT DOES NOT EXISTS
+        console.log("unknown property updating");
+      }
     });
+
+    await task.save();
     if (!task) {
-      res.status(404).send("Task not found");
-    }
-    res.send(task);
+      res.status(404).send("task not found");
+    } else res.send(task);
   } catch (error) {
     res.status(500).send(error);
   }
+  // NOTE Below code wont work for middleware which we are using in this operation of updating the user NOTE
+  // IMPORTANT;
+  // "https://stackoverflow.com/questions/54579752/using-mongoose-pre-hook-to-get-document-before-findoneandupdate"
+
+  // try {
+  //   const task = await Task.findByIdAndUpdate(id, req.body, {
+  //     new: true,
+  //     runValidators: true,
+  //   });
+  //   if (!task) {
+  //     res.status(404).send("Task not found");
+  //   }
+  //   res.send(task);
+  // } catch (error) {
+  //   res.status(500).send(error);
+  // }
 });
 
 router.get("/tasks", async (req, res) => {
