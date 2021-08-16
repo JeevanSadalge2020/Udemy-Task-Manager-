@@ -1,27 +1,47 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/user");
+const auth = require("../middleware/auth");
 const { ObjectId } = require("mongodb");
-const { findOneAndUpdate } = require("../models/user");
+const { Error } = require("mongoose");
 require("../db/mongoose");
+const key = "jeevan";
 
 router.post("/users", async (req, res) => {
   const user = new User(req.body);
   try {
-    await user.save();
-    res.status(201).send(user);
+    if (!(await User.findOne({ email: req.body.email }))) {
+      await user.generateToken();
+      await user.save();
+      res.send(user);
+    } else {
+      res.status(400).send("Email already registered");
+    }
   } catch (error) {
     res.status(400).send(error);
   }
 });
 
-router.get("/users", async (req, res) => {
+router.get("/users/me", auth, async (req, res) => {
+  res.send(req.user);
+});
+
+router.post("/users/login", async (req, res) => {
   try {
-    const users = await User.find();
-    res.send(users);
+    const user = await User.getUserByCredentials(
+      req.body.email,
+      req.body.password
+    );
+    if (!user) res.status(400).send("Unable to authenticate");
+    const token = await user.generateToken();
+    res.send({ user, token });
   } catch (error) {
-    res.status(500).send(error);
+    res.status(400).send(error);
   }
+});
+
+router.get("/users/welcome", auth, (req, res) => {
+  res.send("welcome users");
 });
 
 router.get("/users/:id", async (req, res) => {

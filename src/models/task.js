@@ -12,6 +12,7 @@ const taskSchema = new Schema({
     type: Boolean,
     defalut: false,
   },
+  token: { type: String },
 });
 
 taskSchema.pre("save", async function (next) {

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { Schema } = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const UserSchema = new Schema({
   name: {
@@ -13,6 +14,7 @@ const UserSchema = new Schema({
     type: String,
     trim: true,
     lowercase: true,
+    unique: true,
     validate: {
       validator: validator.isEmail,
       message: "{VALUE} is not a valid email",
@@ -58,7 +60,48 @@ const UserSchema = new Schema({
     default: 0,
     integerOnly: true,
   },
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
 });
+
+UserSchema.methods.generateToken = function () {
+  const user = this;
+  const token = jwt.sign({ id: user._id.toString() }, "secret");
+  user.tokens.push({ token });
+  return token;
+};
+
+UserSchema.statics.getUserByCredentials = async (email, password) => {
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log("User does not exists");
+      return undefined;
+    } else {
+      try {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          console.log("Password does not match");
+          return undefined;
+        } else {
+          console.log("Login Successful");
+          return user;
+        }
+      } catch (error) {
+        throw new Error(error);
+      }
+    }
+  } catch (error) {
+    // console.log("Unable to find a user");
+    throw new Error(error);
+  }
+};
 
 UserSchema.pre("save", async function (next) {
   const user = this;

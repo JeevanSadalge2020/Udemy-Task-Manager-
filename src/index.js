@@ -9,4 +9,8 @@ app.use(express.json());
 app.use(tasksRouter);
 app.use(usersRouter);
 
+// jwt.sign({ foo: "bar" }, "jeevan", function (err, token) {
+//   console.log("jwt", token);
+// });
+
 app.listen(port, () => console.log("Listening on port", port));
