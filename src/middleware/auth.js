@@ -1,10 +1,11 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const secret = process.env.jwtSecret;
 
 const auth = async (req, res, next) => {
   try {
     const token = req.header("Authorization").replace("Bearer ", "");
-    const decoded = jwt.verify(token, "secret");
+    const decoded = jwt.verify(token, secret);
     // IMPORTANT
     const user = await User.findOne({ _id: decoded.id, "tokens.token": token });
     if (!user) throw new Error(); //this will go to catch block

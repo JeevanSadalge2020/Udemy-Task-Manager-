@@ -3,6 +3,7 @@ const { Schema } = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const secret = process.env.jwtSecret;
 
 const UserSchema = new Schema({
   name: {
@@ -62,7 +63,7 @@ const UserSchema = new Schema({
 
 UserSchema.methods.generateToken = function () {
   const user = this;
-  const token = jwt.sign({ id: user._id.toString() }, "secret");
+  const token = jwt.sign({ id: user._id.toString() }, secret);
   user.tokens.push({ token });
   return token;
 };
