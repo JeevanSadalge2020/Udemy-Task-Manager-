@@ -25,16 +25,6 @@ const UserSchema = new Schema({
     type: String,
     required: true,
     trim: true,
-    // validate: {
-    //   validator: validator.isStrongPassword,
-    //   options: {
-    //     minLength: 5,
-    //     minLowercase: 1,
-    //     minUppercase: 1,
-    //     minSymbols: 1,
-    //   },
-    //   message: "{VALUE} Password not matching criteria!",
-    // },
     validate(value) {
       if (validator.isEmpty(value)) {
         throw new Error("Please enter your password!");
@@ -98,7 +88,6 @@ UserSchema.statics.getUserByCredentials = async (email, password) => {
       }
     }
   } catch (error) {
-    // console.log("Unable to find a user");
     throw new Error(error);
   }
 };
@@ -123,41 +112,6 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-// UserSchema.pre("findOneAndUpdate", async function (next) {
-//   console.log(
-//     "......................................in findOne middleware........................"
-//   );
-
-//   const user = await this.model.findOne(this.getQuery());
-//   console.log("=========user==========", user);
-//   // const docToUpdate = await this.model.findOne(this.getQuery());
-//   const password = user.password;
-//   console.log("updated password", password);
-//   let salt = 8;
-//   // only hash the password if it has been modified (or is new)
-//   if (!user.isModified("password")) return next();
-//   try {
-//     console.log("in try of salt of pre update");
-//     salt = await bcrypt.genSalt(salt);
-//   } catch (error) {
-//     console.log("in catch of salt of pre update");
-//     console.log(error);
-//     next(error);
-//   }
-//   try {
-//     console.log("in try of hash of pre update");
-//     const hashPass = await bcrypt.hash(password, salt);
-//     console.log("hashpass", hashPass);
-//     user.password = hashPass;
-//   } catch (error) {
-//     console.log("in catch of salt of pre update");
-//     console.log(error);
-//     next(error);
-//   }
-//   console.log("nothing is workng properly");
-//   next();
-// });
-
 UserSchema.methods.validatePassword = async function (
   inputPassword,
   databasePassword
@@ -168,29 +122,6 @@ UserSchema.methods.validatePassword = async function (
     return error;
   }
 };
-
-// UserSchema.pre("save", function (next) {
-//   var user = this;
-//   console.log("user", user);
-
-//   // only hash the password if it has been modified (or is new)
-//   if (!user.isModified("password")) return next();
-
-//   // generate a salt
-//   bcrypt.genSalt(8, function (err, salt) {
-//     console.log(salt);
-//     if (err) return next(err);
-
-//     // hash the password using our new salt
-//     bcrypt.hash(user.password, salt, null, function (err, hash) {
-//       if (err) return next(err);
-
-//       // override the cleartext password with the hashed one
-//       user.password = hash;
-//       next();
-//     });
-//   });
-// });
 
 const User = mongoose.model("User", UserSchema);
 

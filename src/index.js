@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 const tasksRouter = require("./routers/tasks");
 const usersRouter = require("./routers/users");
@@ -8,9 +8,5 @@ const usersRouter = require("./routers/users");
 app.use(express.json());
 app.use(tasksRouter);
 app.use(usersRouter);
-
-// jwt.sign({ foo: "bar" }, "jeevan", function (err, token) {
-//   console.log("jwt", token);
-// });
 
 app.listen(port, () => console.log("Listening on port", port));

@@ -5,7 +5,6 @@ const auth = require("../middleware/auth");
 const { ObjectId } = require("mongodb");
 const { Error } = require("mongoose");
 require("../db/mongoose");
-const key = "jeevan";
 
 router.post("/users", async (req, res) => {
   const user = new User(req.body);
@@ -23,7 +22,8 @@ router.post("/users", async (req, res) => {
 });
 
 router.get("/users/me", auth, async (req, res) => {
-  res.send(req.user);
+  const user = req.user;
+  res.send(user);
 });
 
 router.post("/users/login", async (req, res) => {
@@ -33,10 +33,43 @@ router.post("/users/login", async (req, res) => {
       req.body.password
     );
     if (!user) res.status(400).send("Unable to authenticate");
-    const token = await user.generateToken();
-    res.send({ user, token });
+    else {
+      const token = await user.generateToken();
+      await user.save();
+      res.send({ user: user.getPublicProfile(), token });
+    }
   } catch (error) {
     res.status(400).send(error);
+  }
+});
+
+router.post("/users/logout", auth, async (req, res) => {
+  try {
+    const tokenToRemove = req.token;
+    const user = req.user;
+    user.tokens = user.tokens.filter(token => {
+      // console.log("TOKEN FROM DB", token);
+      // console.log("TOKEN FROM LOGIN", tokenToRemove);
+      if (token.token !== tokenToRemove) {
+        return token;
+      }
+    });
+    await user.save();
+    console.log(user.tokens);
+    res.send("logout succeed");
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+router.post("/users/logoutAll", auth, async (req, res) => {
+  try {
+    const user = req.user;
+    user.tokens = [];
+    await user.save();
+    res.send("logout succeed from all accounts");
+  } catch (error) {
+    console.log(error.message);
   }
 });
 
@@ -68,7 +101,6 @@ router.patch("/users/:id", async (req, res) => {
     const user = await User.findById(id);
     // IMPORTANT;
     keys.forEach(key => {
-      console.log("============", key);
       if (props.includes(key)) {
         user[key] = req.body[key];
       } else {
