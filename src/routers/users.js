@@ -6,13 +6,13 @@ const { ObjectId } = require("mongodb");
 const { Error } = require("mongoose");
 require("../db/mongoose");
 
-router.post("/users", async (req, res) => {
+router.post("/users/create", async (req, res) => {
   const user = new User(req.body);
   try {
     if (!(await User.findOne({ email: req.body.email }))) {
-      await user.generateToken();
+      const token = await user.generateToken();
       await user.save();
-      res.send(user);
+      res.status(201).send({ user, token });
     } else {
       res.status(400).send("Email already registered");
     }
