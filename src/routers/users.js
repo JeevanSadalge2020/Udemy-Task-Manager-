@@ -36,7 +36,7 @@ router.post("/users/login", async (req, res) => {
     else {
       const token = await user.generateToken();
       await user.save();
-      res.send({ user: user.getPublicProfile(), token });
+      res.send({ user, token });
     }
   } catch (error) {
     res.status(400).send(error);
